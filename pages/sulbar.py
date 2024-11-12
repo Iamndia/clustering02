@@ -9,10 +9,7 @@ import folium
 from streamlit_folium import st_folium
 
 st.title("Kelapa Sulawesi Barat")
-st.sidebar.page_link("halamanutama.py", label="Halaman Utama")
-st.sidebar.page_link("pages\sulbar.py", label="Kelapa Sulbar")
-st.sidebar.page_link("pages\polewali.py", label="Kelapa Polman")
-st.sidebar.page_link("pages\majene.py", label="Kelapa Majene")
+
 # Membaca dataset dari file Excel
 df = pd.read_excel("kelapaKabupaten.xlsx")
 x = df.iloc[:, [4, 5]].values
