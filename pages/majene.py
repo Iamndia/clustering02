@@ -7,16 +7,33 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 import folium 
 from streamlit_folium import st_folium
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
+
 
 st.title("Kelapa Majene")
-
+st.markdown("<hr>", unsafe_allow_html=True)
+# Sidebar Title yang Terpusat
+st.sidebar.markdown(
+    """
+    <div style="text-align: center; font-size: 24px; color: #FFFFFFFF; font-weight: bold; font-family: Arial;">
+        Kelapa Sulawesi Barat
+    </div> <hr>
+    """, 
+    unsafe_allow_html=True
+)
+st.sidebar.page_link("halamanutama.py", label="Halamana Utama")
+st.sidebar.page_link("pages/Sulbar.py", label="Kelapa Sulawesi Barat ")
+st.sidebar.page_link("pages/Polman.py", label="Kelapa Polewali Mandar ")
+st.sidebar.page_link("pages/Majene.py", label="Kelapa Majene ")
+# Garis pemisah
+st.sidebar.markdown("<hr>", unsafe_allow_html=True)
 
 # Membaca dataset dari file Excel
 df = pd.read_excel("kelapaMajene.xlsx")
 x = df.iloc[:, [4, 5]].values
 
 st.header("Isi Dataset")
-st.write(df)
+st.markdown(df.to_html(classes='styled-table'), unsafe_allow_html=True)
 
 # Elbow method untuk menentukan jumlah cluster yang tepat
 clusters = []
@@ -38,15 +55,43 @@ st.pyplot(fig1)
 scaler = StandardScaler()
 x_scaled = scaler.fit_transform(x)
 
-# Proses K-Means Clustering dengan jumlah cluster 3
-kmeans = KMeans(n_clusters=3, init='k-means++', random_state=42)
+st.sidebar.subheader("Nilai jumlah K")
+clust = st.sidebar.slider("Pilih Jumlah Cluster ", 2, 10, 3, 1)
+
+# Proses K-Means Clustering dengan jumlah cluster berdasarkan slider
+kmeans = KMeans(n_clusters=clust, init='k-means++', random_state=42)
 df['Cluster'] = kmeans.fit_predict(x_scaled)
+# Menghitung Metrik Evaluasi
+silhouette_avg = silhouette_score(x_scaled, df['Cluster'])
+calinski_harabasz = calinski_harabasz_score(x_scaled, df['Cluster'])
+davies_bouldin = davies_bouldin_score(x_scaled, df['Cluster'])
+
+# Menampilkan Metrik Evaluasi di Sidebar
+st.sidebar.subheader("Metrik Evaluasi Clustering")
+st.sidebar.metric(label="Silhouette Score", value=round(silhouette_avg, 3))
+st.sidebar.metric(label="Calinski-Harabasz Index", value=round(calinski_harabasz, 3))
+st.sidebar.metric(label="Davies-Bouldin Index", value=round(davies_bouldin, 3))
 
 # Mengubah nama kolom untuk lebih rapi
 df.columns = df.columns.str.strip()
 
+# Membagi hasil clustering ke dalam tiga kategori: Rendah, Sedang, Tinggi
+cluster_labels = ['Rendah', 'Sedang', 'Tinggi']
+# Cek jumlah cluster
+if clust == 2:
+    # Jika jumlah cluster 2, hanya gunakan kategori Tinggi dan Rendah
+    clusters_split = np.array_split(range(clust), 2)  # Bagi menjadi 2 kelompok
+    cluster_labels = ['Rendah', 'Tinggi']
+else:
+    # Jika lebih dari 2, gunakan kategori Rendah, Sedang, Tinggi
+    clusters_split = np.array_split(range(clust), 3)
+
+cluster_mapping = {}
+for idx, split in enumerate(clusters_split):
+    for cluster_id in split:
+        cluster_mapping[cluster_id] = cluster_labels[idx]
+
 # Mapping cluster numerik ke kategori
-cluster_mapping = {2: 'Rendah', 1: 'Sedang', 0: 'Tinggi'}
 df['Cluster'] = df['Cluster'].map(cluster_mapping)
 
 # Mapping warna berdasarkan cluster
@@ -87,6 +132,11 @@ st.markdown(
     }
     [data-testid="stSidebarContent"] {
     background-color: #020249B9;
+    }
+    header {visibility: hidden;}
+    .css-1y4p8pa.e1fqkh3o0 {visibility: hidden;}
+    [data-testid="stSidebarNav"] {
+    display: none;
     }
     </style>
     """,
