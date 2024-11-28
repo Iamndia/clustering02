@@ -12,7 +12,7 @@ st.sidebar.markdown(
     """, 
     unsafe_allow_html=True
 )
-st.sidebar.page_link("halamanutama.py", label="Halamana Utama")
+st.sidebar.page_link("Halamanutama.py", label="Halamana Utama")
 st.sidebar.page_link("pages/Sulbar.py", label="Kelapa Sulawesi Barat ")
 st.sidebar.page_link("pages/Polman.py", label="Kelapa Polewali Mandar ")
 st.sidebar.page_link("pages/Majene.py", label="Kelapa Majene ")
